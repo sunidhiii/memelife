@@ -1,6 +1,6 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 const searchAddress = "ALkXoJ7daxtcE7sauzg8NVpwKQ8q8aE7AdoyMzX9FTTY";
-const endPoint ='https://crimson-thrumming-grass.solana-mainnet.quiknode.pro/ff7ae722ce0ac86c3fa1456a05bee9e97170f81d/'
+const endPoint = process.env.END_POINT;
 const solanaConnection = new Connection(endPoint);
 const getTransactions = async(address, numTx) => {
     const pubKey = new PublicKey(address);
