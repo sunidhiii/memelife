@@ -5,13 +5,13 @@
   "main": "index.js",
   "scripts": {
     "compile": "npx hardhat compile",
-    "deploy:controller": "npx hardhat run scripts/Controller_deploy.js --network sepolia",
-    "deploy:data": "npx hardhat run scripts/Data_deploy.js --network sepolia",
-    "deploy:nft": "npx hardhat run scripts/NFT_deploy.js --network sepolia",
-    "test:controller": "npx hardhat test test/Controller_test.js --network sepolia",
-    "test:data": "npx hardhat test test/Data_test.js --network sepolia",
-    "test:nft": "npx hardhat test test/NFT_test.js --network sepolia",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "deploy:sepolia": "npx hardhat run scripts/deploy_eth.js --network sepolia",
+    "deploy:ethereum": "npx hardhat run scripts/deploy_eth.js --network ethereum",
+    "deploy:mumbai": "npx hardhat run scripts/deploy_polygon.js --network mumbai",
+    "deploy:polygon": "npx hardhat run scripts/deploy_polygon.js --network polygon",
+    "deploy:bsc_testnet": "npx hardhat run scripts/deploy_bsc.js --network bsc_testnet",
+    "deploy:bsc_mainnt": "npx hardhat run scripts/deploy_bsc.js --network bsc_mainnt",
+    "test": "npx hardhat test test/Payments.js"
   },
   "author": "",
   "license": "ISC",
@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.1",
-    "dotenv": "^16.4.1"
+    "dotenv": "^16.4.1",
+    "ethers": "^6.10.0"
   }
 }

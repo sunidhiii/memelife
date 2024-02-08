@@ -8,13 +8,21 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract TokenSale is Ownable, Pausable, ReentrancyGuard {
+contract Payments is Ownable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
-
-    IERC20 public USDTInterface;
 
     uint256[] public percentages;
     address[] public wallets;
+
+    address public USDT;
+    address public USDC;
+
+    // mapping(address => uint256) public totalAmount;
+
+    enum Token {
+        USDT,
+        USDC
+    }
 
     event TokensBought(
         address indexed user,
@@ -24,7 +32,12 @@ contract TokenSale is Ownable, Pausable, ReentrancyGuard {
     );
 
     /// constructor
-    constructor() Ownable(msg.sender) {}
+    constructor(address _usdt, address _usdc) Ownable(msg.sender) {
+        require(_usdt != address(0) && _usdc != address(0), "Invalid address");
+
+        USDT = _usdt;
+        USDC = _usdc;
+    }
 
     function buyWithEth()
         external
@@ -45,24 +58,27 @@ contract TokenSale is Ownable, Pausable, ReentrancyGuard {
     }
 
     function buyWithToken(
-        address token,
-        uint256 amount
-    ) external whenNotPaused returns (bool) {
-        require(token != address(0), "Invalid token address");
-        require(amount > 0, "Invalid amount");
+        Token _token,
+        uint256 _amount
+    ) external whenNotPaused nonReentrant returns (bool) {
+        require(_token == Token.USDC || _token == Token.USDC, "Invalid token");
+        require(_amount > 0, "Invalid amount");
+        
+        address token = _token == Token.USDT ? USDT : USDC; 
+
         require(
-            IERC20(token).allowance(msg.sender, address(this)) >= amount,
+            IERC20(token).allowance(msg.sender, address(this)) >= _amount,
             "Insufficient allowance"
         );
         require(
-            IERC20(token).balanceOf(msg.sender) >= amount,
+            IERC20(token).balanceOf(msg.sender) >= _amount,
             "Insufficient balance"
         );
 
-        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
+        IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
 
-        splitUSDTValue(amount);
-        emit TokensBought(_msgSender(), token, amount, block.timestamp);
+        splitTokenValue(token, _amount);
+        emit TokensBought(_msgSender(), token, _amount, block.timestamp);
         return true;
     }
 
@@ -87,9 +103,9 @@ contract TokenSale is Ownable, Pausable, ReentrancyGuard {
         }
     }
 
-    function splitUSDTValue(uint256 _amount) internal {
+    function splitTokenValue(address _token, uint256 _amount) internal {
         if (wallets.length == 0) {
-            (bool success, ) = address(USDTInterface).call(
+            (bool success, ) = address(_token).call(
                 abi.encodeWithSignature(
                     "transferFrom(address,address,uint256)",
                     _msgSender(),
@@ -102,7 +118,7 @@ contract TokenSale is Ownable, Pausable, ReentrancyGuard {
             uint256 dust;
             for (uint256 i = 0; i < wallets.length; i++) {
                 uint256 amountToTransfer = (_amount * percentages[i]) / 100;
-                (bool success, ) = address(USDTInterface).call(
+                (bool success, ) = address(_token).call(
                     abi.encodeWithSignature(
                         "transferFrom(address,address,uint256)",
                         _msgSender(),
@@ -114,7 +130,7 @@ contract TokenSale is Ownable, Pausable, ReentrancyGuard {
                 dust += amountToTransfer;
             }
             if ((_amount - dust) > 0) {
-                (bool success, ) = address(USDTInterface).call(
+                (bool success, ) = address(_token).call(
                     abi.encodeWithSignature(
                         "transferFrom(address,address,uint256)",
                         _msgSender(),
@@ -127,9 +143,9 @@ contract TokenSale is Ownable, Pausable, ReentrancyGuard {
         }
     }
 
-    function sendValue(address payable recipient, uint256 amount) internal {
-        require(address(this).balance >= amount, "Low balance");
-        (bool success, ) = recipient.call{value: amount}("");
+    function sendValue(address payable _recipient, uint256 _amount) internal {
+        require(address(this).balance >= _amount, "Low balance");
+        (bool success, ) = _recipient.call{value: _amount}("");
         require(success, "ETH Payment failed");
     }
 
@@ -152,6 +168,13 @@ contract TokenSale is Ownable, Pausable, ReentrancyGuard {
         }
 
         require(totalPercentage == 100, "Total percentage must equal 100");
+    }
+
+    function updateToken(address _usdt, address _usdc) external onlyOwner {
+        require(_usdt != address(0) && _usdc != address(0), "Invalid address");
+
+        USDT = _usdt;
+        USDC = _usdc;
     }
 
     /**
