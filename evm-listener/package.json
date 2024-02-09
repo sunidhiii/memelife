@@ -8,5 +8,10 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@solana/web3.js": "^1.90.0",
+    "dotenv": "^16.4.1",
+    "web3": "^4.4.0"
+  }
 }

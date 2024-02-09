@@ -6,12 +6,12 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract USDC_Token is ERC20, ERC20Burnable, ERC20Pausable, Ownable {
-    constructor(address initialOwner)
-        ERC20("USDC_Token", "USDC")
-        Ownable(initialOwner)
+contract Token is ERC20, ERC20Burnable, ERC20Pausable, Ownable {
+    constructor(string memory name, string memory symbol)
+        ERC20(name, symbol)
+        Ownable(msg.sender)
     {
-         mint(initialOwner, 10000000000000000000000000);
+         mint(msg.sender, 100000000000000000000);
     }
 
     function pause() public onlyOwner {

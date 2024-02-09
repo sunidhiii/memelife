@@ -1,7 +1,7 @@
-import { Connection, PublicKey } from "@solana/web3.js";
+const { Connection, PublicKey } = require("@solana/web3.js");
 const searchAddress = "ALkXoJ7daxtcE7sauzg8NVpwKQ8q8aE7AdoyMzX9FTTY";
-const endPoint = process.env.END_POINT;
-const solanaConnection = new Connection(endPoint);
+// const endPoint = process.env.END_POINT;
+const solanaConnection = new Connection("https://api.devnet.solana.com");
 const getTransactions = async(address, numTx) => {
     const pubKey = new PublicKey(address);
     let transactionList = await solanaConnection.getSignaturesForAddress(pubKey, {limit:numTx});
