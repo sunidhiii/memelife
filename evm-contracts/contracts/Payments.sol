@@ -18,6 +18,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
     address public USDT;
 
     mapping(address => bool) public isShareHolder;
+    mapping(address => bool) public wertWhitelisted;
 
     enum Token {
         USDC,
@@ -27,8 +28,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
     event TokensPaid(
         address indexed user,
         address indexed currency,
-        uint256 amountPaid,
-        uint256 timestamp
+        uint256 amountPaid
     );
 
     /// constructor
@@ -49,7 +49,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
         require(msg.value > 0, "Invalid Amount");
         require((msg.sender).balance >= msg.value, "Insufficient balance");
 
-        emit TokensPaid(_msgSender(), address(0), msg.value, block.timestamp);
+        emit TokensPaid(_msgSender(), address(0), msg.value);
         return true;
     }
 
@@ -75,7 +75,36 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
 
         IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
 
-        emit TokensPaid(_msgSender(), token, _amount, block.timestamp);
+        emit TokensPaid(_msgSender(), token, _amount);
+        return true;
+    }
+
+    function buyWithWert(address _user, uint256 _amount)
+        external
+        whenNotPaused
+        nonReentrant
+        returns (bool)
+    {
+        require(
+            wertWhitelisted[msg.sender],
+            "User not whitelisted for this tx"
+        );
+        require(_amount > 0, "Invalid amount");
+
+        address token = USDT;
+
+        require(
+            IERC20(token).allowance(msg.sender, address(this)) >= _amount,
+            "Insufficient allowance"
+        );
+        require(
+            IERC20(token).balanceOf(msg.sender) >= _amount,
+            "Insufficient balance"
+        );
+
+        IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
+
+        emit TokensPaid(_user, token, _amount);
         return true;
     }
 
@@ -102,7 +131,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
     }
 
     function withdrawToken(Token _token) external {
-        require(isShareHolder[msg.sender], "Not a shareholder");
+        require(msg.sender == owner() || isShareHolder[msg.sender], "Not a shareholder");
         require(_token == Token.USDC || _token == Token.USDT, "Invalid token");
 
         address token = _token == Token.USDT ? USDT : USDC;
@@ -147,7 +176,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
     }
 
     function withdrawEth() external {
-        require(isShareHolder[msg.sender], "Not a shareholder");
+        require(msg.sender == owner() || isShareHolder[msg.sender], "Not a shareholder");
         uint256 amount = address(this).balance;
 
         require(amount > 0, "No balance");
@@ -177,6 +206,14 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
         }
     }
 
+    function whitelistUsersForWERT(
+        address[] calldata _addressesToWhitelist
+    ) external onlyOwner {
+        for (uint256 i = 0; i < _addressesToWhitelist.length; i++) {
+            wertWhitelisted[_addressesToWhitelist[i]] = true;
+        }
+    }
+
     function updateToken(address _usdt, address _usdc) external onlyOwner {
         require(_usdc != address(0) && _usdt != address(0), "Invalid address");
 
@@ -197,4 +234,5 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
     function unpause() external onlyOwner {
         _unpause();
     }
+    
 }

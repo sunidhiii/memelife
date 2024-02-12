@@ -18,17 +18,16 @@ async function main() {
 
   const Payments = await hre.ethers.getContractFactory("Payments");
   const payments = await Payments.deploy(usdt, usdc);
-  // await payments.deployed();
 
   console.log(
-    `Payment contract deployed to ${await payments.getAddress()}`
+    `Payment contract deployed to https://sepolia.etherscan.io/address/${await payments.getAddress()}`
   );
   
   // Verify the smart contract using hardhat 
-  await hre.run("verify:verify", {
-    address: payments.address,
-    constructorArguments: [usdt, usdc],
-  });
+  // await hre.run("verify:verify", {
+  //   address: payments.address,
+  //   constructorArguments: [usdt, usdc],
+  // });
 
 }
 

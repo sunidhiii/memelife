@@ -18,7 +18,6 @@ async function main() {
 
   const Payments = await hre.ethers.getContractFactory("Payments");
   const payments = await Payments.deploy(usdt, usdc);
-  // await payments.deployed();
 
   console.log(
     `Payment contract deployed to ${await payments.getAddress()}`
