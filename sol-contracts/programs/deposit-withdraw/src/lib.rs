@@ -1,96 +1,44 @@
 use anchor_lang::prelude::*;
+use std::ops::DerefMut;
 
 declare_id!("7Xev9w6cvHkDXmDFB71LBWXP99bNXqnccTKXz2QZEeRz");
 
 #[program]
 pub mod deposit_withdraw {
     use super::*;
-    pub fn initialize(ctx: Context<Initialize>, nonce: u8) -> ProgramResult {
 
-        let pool = &mut ctx.accounts.pool;
-        pool.authority = ctx.accounts.authority.key();
-        pool.vault = ctx.accounts.vault.key();
-        pool.nonce = nonce;
 
-        Ok(())
+    #[derive(Accounts)]
+    #[instruction(nonce: u8)]
+    pub struct Initialize<'info> {
+        authority: UncheckedAccount<'info>,
+        owner: Signer<'info>,
+        #[account(
+            seeds = [
+                pool.to_account_info().key.as_ref(),
+            ],
+            bump = nonce,
+        )]
+        pool_signer: UncheckedAccount<'info>,
+        #[account(mut)]
+        pool: Box<Account<'info, Pool>>,
+        #[account(
+            mut,
+            seeds = [
+                pool.to_account_info().key.as_ref(),
+            ],
+            bump = nonce,
+        )]
+        vault: AccountInfo<'info>,
+        system_program: Program<'info, System>,
     }
 
-
     pub fn deposit(ctx: Context<Deposit>, amount: u64) -> ProgramResult {
-        // Ensure the amount is not zero
         if amount == 0 {
             return Err(ErrorCode::InvalidAmount.into());
         }
 
-        // Calculate the amount to be transferred to each wallet
-        let transfer_amount = amount / 3;
-
-        // Create system transfer instructions for each transfer
-        let ix_to_wallet1 = anchor_lang::solana_program::system_instruction::transfer(
-            &ctx.accounts.depositor.key(),
-            &ctx.accounts.wallet1.key(),
-            transfer_amount,
-        );
-
-        let ix_to_wallet2 = anchor_lang::solana_program::system_instruction::transfer(
-            &ctx.accounts.depositor.key(),
-            &ctx.accounts.wallet2.key(),
-            transfer_amount,
-        );
-
-        let ix_to_wallet3 = anchor_lang::solana_program::system_instruction::transfer(
-            &ctx.accounts.depositor.key(),
-            &ctx.accounts.wallet3.key(),
-            transfer_amount,
-        );
-
-        // Invoke the transfer instructions
-        pub fn deposit(ctx: Context<Deposit>, amount: u64) -> ProgramResult {
-            // Ensure the amount is not zero
-            if amount == 0 {
-                return Err(ErrorCode::InvalidAmount.into());
-            }
-
-            // Calculate the amount to be transferred to each wallet
-            let transfer_amount = amount / 3;
-
-            // Create system transfer instructions for each transfer
-            let ix_to_wallet1 = anchor_lang::solana_program::system_instruction::transfer(
-                &ctx.accounts.depositor.key(),
-                &ctx.accounts.wallet1.key(),
-                transfer_amount,
-            );
-
-            let ix_to_wallet2 = anchor_lang::solana_program::system_instruction::transfer(
-                &ctx.accounts.depositor.key(),
-                &ctx.accounts.wallet2.key(),
-                transfer_amount,
-            );
-
-            let ix_to_wallet3 = anchor_lang::solana_program::system_instruction::transfer(
-                &ctx.accounts.depositor.key(),
-                &ctx.accounts.wallet3.key(),
-                transfer_amount,
-            );
-
-            // Invoke the transfer instructions
-            anchor_lang::solana_program::program::invoke(&ix_to_wallet1, &[
-                ctx.accounts.depositor.to_account_info(),
-                ctx.accounts.wallet1.to_account_info(),
-            ])?;
-
-            anchor_lang::solana_program::program::invoke(&ix_to_wallet2, &[
-                ctx.accounts.depositor.to_account_info(),
-                ctx.accounts.wallet2.to_account_info(),
-            ])?;
-
-            anchor_lang::solana_program::program::invoke(&ix_to_wallet3, &[
-                ctx.accounts.depositor.to_account_info(),
-                ctx.accounts.wallet3.to_account_info(),
-            ])?;
-
-            Ok(())
-        }
+        ctx.accounts.pool.deposited_amount += amount;
 
         Ok(())
     }
@@ -100,36 +48,100 @@ pub mod deposit_withdraw {
             ctx.accounts.pool.to_account_info().key.as_ref(),
             &[ctx.accounts.pool.nonce],
         ];
-        let signer = &[&seeds[..]];
+        let _signer = &[&seeds[..]];
         let lamports = ctx.accounts.vault.to_account_info().lamports();
 
         if amount > lamports {
             return Err(ErrorCode::NotEnoughPoolAmount.into());
         }
 
-        anchor_lang::solana_program::program::invoke_signed(
-            &anchor_lang::solana_program::system_instruction::transfer(
-                &ctx.accounts.vault.key(),
-                &ctx.accounts.receiver.key(),
-                amount
-            ),
-            &[
-                ctx.accounts.vault.to_account_info(),
-                ctx.accounts.receiver.to_account_info(),
-            ],
-            signer,
-        )?;
+        // Get the total deposited amount from the pool
+        let _total_amount = ctx.accounts.pool.deposited_amount;
+
+        // Define the percentages for each wallet
+        let percentage_wallet1 = ctx.accounts.pool.percentage_wallet1;
+        let percentage_wallet2 = ctx.accounts.pool.percentage_wallet2;
+        let percentage_wallet3 = ctx.accounts.pool.percentage_wallet3;
+
+        // Calculate the amount to be transferred to each wallet based on the percentages
+        let transfer_amount_wallet1 = (amount * percentage_wallet1 as u64) / 100;
+        let transfer_amount_wallet2 = (amount * percentage_wallet2 as u64) / 100;
+        let transfer_amount_wallet3 = (amount * percentage_wallet3 as u64) / 100;
+
+        // Create system transfer instructions for each transfer
+        let ix_to_wallet1 = anchor_lang::solana_program::system_instruction::transfer(
+            &ctx.accounts.vault.key(),
+            &ctx.accounts.wallet1.key(),
+            transfer_amount_wallet1,
+        );
+
+        let ix_to_wallet2 = anchor_lang::solana_program::system_instruction::transfer(
+            &ctx.accounts.vault.key(),
+            &ctx.accounts.wallet2.key(),
+            transfer_amount_wallet2,
+        );
+
+        let ix_to_wallet3 = anchor_lang::solana_program::system_instruction::transfer(
+            &ctx.accounts.vault.key(),
+            &ctx.accounts.wallet3.key(),
+            transfer_amount_wallet3,
+        );
+
+        // Invoke the transfer instructions
+        anchor_lang::solana_program::program::invoke(&ix_to_wallet1, &[
+            ctx.accounts.vault.to_account_info(),
+            ctx.accounts.wallet1.to_account_info(),
+        ])?;
+
+        anchor_lang::solana_program::program::invoke(&ix_to_wallet2, &[
+            ctx.accounts.vault.to_account_info(),
+            ctx.accounts.wallet2.to_account_info(),
+        ])?;
+
+        anchor_lang::solana_program::program::invoke(&ix_to_wallet3, &[
+            ctx.accounts.vault.to_account_info(),
+            ctx.accounts.wallet3.to_account_info(),
+        ])?;
 
         Ok(())
     }
 
+    // Add a method to modify the percentages if needed
+    pub fn modify_percentages(
+        ctx: Context<ModifyPercentages>,
+        percentage_wallet1: u8,
+        percentage_wallet2: u8,
+        percentage_wallet3: u8,
+    ) -> ProgramResult {
+        let pool = ctx.accounts.pool.deref_mut();
+
+        // Check if the caller is the owner
+        if *ctx.accounts.owner.key != pool.authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+
+        // Check if the percentages are within a valid range (0-100) and if they add up to 100
+        if percentage_wallet1 > 100
+            || percentage_wallet2 > 100
+            || percentage_wallet3 > 100
+            || percentage_wallet1 + percentage_wallet2 + percentage_wallet3 != 100
+        {
+            return Err(ErrorCode::InvalidPercentages.into());
+        }
+
+        // Update the percentages
+        pool.percentage_wallet1 = percentage_wallet1;
+        pool.percentage_wallet2 = percentage_wallet2;
+        pool.percentage_wallet3 = percentage_wallet3;
+
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
 #[instruction(nonce: u8)]
 pub struct Initialize<'info> {
     authority: UncheckedAccount<'info>,
-
     owner: Signer<'info>,
     #[account(
         seeds = [
@@ -138,9 +150,8 @@ pub struct Initialize<'info> {
         bump = nonce,
     )]
     pool_signer: UncheckedAccount<'info>,
-    #[account(
-        zero,
-    )]
+
+    #[account(mut)]
     pool: Box<Account<'info, Pool>>,
     #[account(
         mut,
@@ -150,7 +161,6 @@ pub struct Initialize<'info> {
         bump = nonce,
     )]
     vault: AccountInfo<'info>,
-
     system_program: Program<'info, System>,
 }
 
@@ -166,8 +176,6 @@ pub struct Deposit<'info> {
     #[account(seeds = [pool.to_account_info().key.as_ref()], bump = pool.nonce)]
     pool_signer: UncheckedAccount<'info>,
     system_program: Program<'info, System>,
-
-    // New accounts for transferring to wallets
     #[account(mut)]
     wallet1: AccountInfo<'info>,
     #[account(mut)]
@@ -198,6 +206,12 @@ pub struct Withdraw<'info> {
     )]
     pool_signer: UncheckedAccount<'info>,
     system_program: Program<'info, System>,
+    #[account(mut)]
+    wallet1: AccountInfo<'info>,
+    #[account(mut)]
+    wallet2: AccountInfo<'info>,
+    #[account(mut)]
+    wallet3: AccountInfo<'info>,
 }
 
 #[account]
@@ -205,6 +219,18 @@ pub struct Pool {
     pub authority: Pubkey,
     pub nonce: u8,
     pub vault: Pubkey,
+    pub owner: Pubkey,
+    pub percentage_wallet1: u8,
+    pub percentage_wallet2: u8,
+    pub percentage_wallet3: u8,
+    pub deposited_amount: u64, // Track the total deposited amount
+}
+
+#[derive(Accounts)]
+pub struct ModifyPercentages<'info> {
+    owner: Signer<'info>,
+    #[account(mut)]
+    pool: Box<Account<'info, Pool>>,
 }
 
 #[error]
@@ -214,4 +240,10 @@ pub enum ErrorCode {
 
     #[msg("Invalid deposit amount.")]
     InvalidAmount,
+
+    #[msg("Unauthorized")]
+    Unauthorized,
+
+    #[msg("Invalid percentages, they should add up to 100")]
+    InvalidPercentages,
 }
