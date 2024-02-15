@@ -37,11 +37,11 @@ module.exports = {
       accounts: [DEPLOYER_PRIVATE_KEY],
     },
     bsc_testnet: {
-      url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+      url: `https://endpoints.omniatech.io/v1/bsc/testnet/public`,
       accounts: [DEPLOYER_PRIVATE_KEY],
     },
     bsc_mainnet: {
-      url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+      url: `https://rpc.ankr.com/bsc`,
       accounts: [DEPLOYER_PRIVATE_KEY],
     },
   },
