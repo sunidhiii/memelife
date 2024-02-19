@@ -131,7 +131,6 @@ pub mod memelife {
             return Err(ErrorCode::InvalidPercentages.into());
         }
 
-        // Update the percentages
         pool.percentage_wallet1 = percentage_wallet1;
         pool.percentage_wallet2 = percentage_wallet2;
         pool.percentage_wallet3 = percentage_wallet3;
@@ -142,7 +141,6 @@ pub mod memelife {
 
 #[derive(Accounts)]
 pub struct Deposit<'info> {
-    // Existing accounts
     #[account(mut, has_one = vault)]
     pool: Box<Account<'info, Pool>>,
     #[account(mut)]
