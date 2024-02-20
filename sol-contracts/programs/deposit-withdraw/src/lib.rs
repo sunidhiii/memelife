@@ -84,6 +84,7 @@ pub mod memelife {
             transfer_amount_wallet3,
         );
 
+        // Invoke the transfer instructions
         anchor_lang::solana_program::program::invoke(
             &ix_to_wallet1,
             &[
@@ -221,29 +222,3 @@ pub enum ErrorCode {
     #[msg("Invalid percentages, they should add up to 100")]
     InvalidPercentages,
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

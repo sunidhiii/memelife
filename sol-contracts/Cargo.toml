@@ -1,4 +1,12 @@
 [workspace]
 members = [
-    "programs/*"
+    "programs/deposit-withdraw"
 ]
+
+[profile.release]
+overflow-checks = true
+
+getrandom = { version = "0.2", features = ["custom"] }
+
+[toolchain]
+anchor_version = "0.18.2"
