@@ -1,9 +1,3 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
 const hre = require("hardhat");
 
 async function main() {
@@ -13,8 +7,8 @@ async function main() {
   // const usdc = "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d";
 
   //Testnet
-  const usdt = "0x55d398326f99059fF775485246999027B3197955";     
-  const usdc = "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d";
+  const usdt = "0x1a551448eAF3b9d25DD818701b8689564386729C";     
+  const usdc = "0xc3ABbD82cc5C69a14a101F839FEa178D1b3C193A ";
 
   const Payments = await hre.ethers.getContractFactory("Payments");
   const payments = await Payments.deploy(usdt, usdc);
@@ -24,10 +18,10 @@ async function main() {
   );
   
   // Verify the smart contract using hardhat 
-  // await hre.run("verify:verify", {
-  //   address: payments.address,
-  //   constructorArguments: [usdt, usdc],
-  // });
+  await hre.run("verify:verify", {
+    address: await payments.getAddress(),
+    constructorArguments: [usdt, usdc],
+  });
 
 }
 

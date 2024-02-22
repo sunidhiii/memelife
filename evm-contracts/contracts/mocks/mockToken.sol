@@ -11,7 +11,7 @@ contract Token is ERC20, ERC20Burnable, ERC20Pausable, Ownable {
         ERC20(name, symbol)
         Ownable(msg.sender)
     {
-         mint(msg.sender, 100000000000000000000);
+         mint(msg.sender, 100000000000000000000000000);
     }
 
     function pause() public onlyOwner {
