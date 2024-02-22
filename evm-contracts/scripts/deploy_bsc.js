@@ -13,8 +13,8 @@ async function main() {
   // const usdc = "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d";
 
   //Testnet
-  const usdt = "0x337610d27c682E347C9cD60BD4b3b107C9d34dDd";     
-  const usdc = "0x64544969ed7ebf5f083679233325356ebe738930";
+  const usdt = "0x54F2c39929f9bAFd24Af2Cb5878868CDe883B8c8";     
+  const usdc = "0x15e1D699F609C3B4ee2091C889c4ebe0dA9fF4CD";
 
   const Payments = await hre.ethers.getContractFactory("Payments");
   const payments = await Payments.deploy(usdt, usdc);

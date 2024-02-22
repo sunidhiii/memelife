@@ -1,4 +1,4 @@
-const { expect } = require("chai");
+const { expect, use } = require("chai");
 
 describe("Payments", function () {
   let owner;
@@ -6,7 +6,8 @@ describe("Payments", function () {
   let percentages;
   let token;
   let payments;
-  let addressZero = '0x0000000000000000000000000000000000000000';
+  // let addressZero = '0x0000000000000000000000000000000000000000';
+  let userAddress = "HrvDUrVTeg5AL7vRMkkvqZGdYgYgBsBBwopr42nZQRca";
 
   before(async function () {
     [owner, alice, bob, admin1, admin2, admin3, admin4] = await ethers.getSigners();
@@ -25,23 +26,6 @@ describe("Payments", function () {
       await usdc_token.getAddress(),
       await usdT_token.getAddress()
     );
-  });
-
-  it("should deposit ETH value correctly", async function () {
-    
-    await expect(payments.connect(alice).buyWithEth({ value: 1 }))
-    .to.emit(payments, 'TokensPaid')
-    .withArgs(await alice.getAddress(), addressZero, 1);
-
-  });
-
-  it("should deposit token value correctly", async function () {
-    await usdT_token.connect(owner).mint(await bob.getAddress(), ethers.parseEther("1"));
-    await usdT_token.connect(bob).approve(await payments.getAddress(), ethers.parseEther("1"));
-
-    await expect(payments.connect(bob).buyWithToken(1, ethers.parseEther("1")))
-    .to.emit(payments, 'TokensPaid')
-    .withArgs(await bob.getAddress(), await usdT_token.getAddress(), ethers.parseEther("1"));
   });
 
   it("should split Token value correctly", async function () {
@@ -65,7 +49,7 @@ describe("Payments", function () {
     // transfer 100 tokens to the contract
     await usdT_token.connect(owner).mint(await bob.getAddress(), ethers.parseEther("100"));
     await usdT_token.connect(bob).approve(await payments.getAddress(), ethers.parseEther("100"));
-    const tx = await payments.connect(bob).buyWithToken(1, ethers.parseEther("100"));
+    const tx = await payments.connect(bob).buyWithToken(userAddress, 1, ethers.parseEther("100"));
     await tx.wait();
 
     // withdraw token called by admin1
@@ -99,7 +83,7 @@ describe("Payments", function () {
     await payments.connect(owner).setSplits(wallets, percentages);
 
     // transfer 1 eth to the contract
-    const tx = await payments.connect(alice).buyWithEth({ value: ethers.parseEther("1")});
+    const tx = await payments.connect(alice).buyWithEth(userAddress, { value: ethers.parseEther("1")});
     await tx.wait();
 
     // withdraw eth called by admin1

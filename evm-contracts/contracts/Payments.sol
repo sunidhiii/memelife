@@ -1,6 +1,6 @@
 //SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -12,7 +12,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     uint256[] public percentages;
-    address[] public wallets;
+    address[] public wallets; 
 
     address public USDC;
     address public USDT;
@@ -28,7 +28,8 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
     event TokensPaid(
         address indexed user,
         address indexed currency,
-        uint256 amountPaid
+        uint256 amountPaid,
+        string solAddress
     );
 
     /// constructor
@@ -39,7 +40,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
         USDT = _usdt;
     }
 
-    function buyWithEth()
+    function buyWithEth(string memory _user)
         external
         payable
         whenNotPaused
@@ -49,11 +50,11 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
         require(msg.value > 0, "Invalid Amount");
         require((msg.sender).balance >= msg.value, "Insufficient balance");
 
-        emit TokensPaid(_msgSender(), address(0), msg.value);
+        emit TokensPaid(msg.sender, address(0), msg.value, _user);
         return true;
     }
 
-    function buyWithToken(Token _token, uint256 _amount)
+    function buyWithToken(Token _token, string memory _user, uint256 _amount)
         external
         whenNotPaused
         nonReentrant
@@ -75,11 +76,12 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
 
         IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
 
-        emit TokensPaid(_msgSender(), token, _amount);
+        emit TokensPaid(msg.sender, token, _amount, _user);
+
         return true;
     }
 
-    function buyWithWert(address _user, uint256 _amount)
+    function buyWithWert(string memory _user, uint256 _amount)
         external
         whenNotPaused
         nonReentrant
@@ -104,7 +106,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
 
         IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
 
-        emit TokensPaid(_user, token, _amount);
+        emit TokensPaid(msg.sender, token, _amount, _user);
         return true;
     }
 
