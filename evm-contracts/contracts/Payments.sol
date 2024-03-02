@@ -12,7 +12,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     uint256[] public percentages;
-    address[] public wallets; 
+    address[] public wallets;
 
     address public USDC;
     address public USDT;
@@ -44,11 +44,9 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
         external
         payable
         whenNotPaused
-        nonReentrant
         returns (bool)
     {
         require(msg.value > 0, "Invalid Amount");
-        require((msg.sender).balance >= msg.value, "Insufficient balance");
 
         emit TokensPaid(msg.sender, address(0), msg.value, _user);
         return true;
@@ -57,7 +55,6 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
     function buyWithToken(Token _token, string memory _user, uint256 _amount)
         external
         whenNotPaused
-        nonReentrant
         returns (bool)
     {
         require(_token == Token.USDC || _token == Token.USDT, "Invalid token");
@@ -65,48 +62,25 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
 
         address token = _token == Token.USDC ? USDC : USDT;
 
-        require(
-            IERC20(token).allowance(msg.sender, address(this)) >= _amount,
-            "Insufficient allowance"
-        );
-        require(
-            IERC20(token).balanceOf(msg.sender) >= _amount,
-            "Insufficient balance"
-        );
-
         IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
 
         emit TokensPaid(msg.sender, token, _amount, _user);
-
         return true;
     }
 
     function buyWithWert(string memory _user, uint256 _amount)
         external
+        payable
         whenNotPaused
-        nonReentrant
         returns (bool)
     {
         require(
             wertWhitelisted[msg.sender],
             "User not whitelisted for this tx"
         );
-        require(_amount > 0, "Invalid amount");
+        // require(_amount == msg.value, "Invalid amount");
 
-        address token = USDT;
-
-        require(
-            IERC20(token).allowance(msg.sender, address(this)) >= _amount,
-            "Insufficient allowance"
-        );
-        require(
-            IERC20(token).balanceOf(msg.sender) >= _amount,
-            "Insufficient balance"
-        );
-
-        IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
-
-        emit TokensPaid(msg.sender, token, _amount, _user);
+        emit TokensPaid(msg.sender, address(0), _amount, _user);
         return true;
     }
 
@@ -132,7 +106,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
         require(totalPercentage == 100, "Total percentage must equal 100");
     }
 
-    function withdrawToken(Token _token) external {
+    function withdrawToken(Token _token) external nonReentrant {
         require(msg.sender == owner() || isShareHolder[msg.sender], "Not a shareholder");
         require(_token == Token.USDC || _token == Token.USDT, "Invalid token");
 
@@ -177,7 +151,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
         }
     }
 
-    function withdrawEth() external {
+    function withdrawEth() external nonReentrant {
         require(msg.sender == owner() || isShareHolder[msg.sender], "Not a shareholder");
         uint256 amount = address(this).balance;
 

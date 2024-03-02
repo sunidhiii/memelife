@@ -36,11 +36,14 @@ const getPastWhiteListEvent = async () => {
   const startBlock = "19125945";
   const endBlock = "19125950";
 
-  const getResult = await contractInstance.getPastEvents("Transfer", {
-    fromBlock: 45735147,
+  const getResult = await contractInstance.getPastEvents("TokensPaid", {
+    fromBlock: 5340681,
     toBlock: "latest",
   });
   console.log("Total Events", getResult.length);
+
+  // const txDetails = await currentWeb3.eth.getTransaction("0xc1b0fc1c2aca988a9208976b0d05c066bda7156cc0fd9ceefc0d9144325334d7");
+  // console.log('txDetails', txDetails)
   for (let i = 0; i < getResult.length; i++) {
     const hash = `https://etherscan.io/tx/${getResult[i].transactionHash}`;
     const getTimestamp = await currentWeb3.eth.getBlock(
@@ -71,8 +74,8 @@ const getWhiteListEvent = async () => {
   eventSubscribe.on("error", (err) => {
     throw err;
   });
-  eventSubscribe.on("connected", (nr) =>
-    console.log("Subscription on Payments started", nr)
+  eventSubscribe.on("connected", () =>
+    console.log("Subscription on Payments started", contractAddress)
   );
   eventSubscribe.on("data", (event) => {
     try {
@@ -87,6 +90,10 @@ const getWhiteListEvent = async () => {
       let data = currentWeb3.eth.abi.decodeParameters(["uint256","string"], event.data);
       const hash = `https://sepolia.etherscan.io/tx/${event.transactionHash}`;
 
+      const txDetails = currentWeb3.eth.getTransaction(event.transactionHash).then((res) => {
+        
+      });
+
       const result = {
         eventName: "TokensPaid",
         account: user[0],
@@ -95,6 +102,7 @@ const getWhiteListEvent = async () => {
         amount: ethers.formatEther(data[0]),
         transactionHash: hash,
         blockNumber: event.blockNumber,
+        chainId: txDetails.chainId
       };
 
       console.log("result", result);

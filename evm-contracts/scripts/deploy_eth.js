@@ -8,10 +8,10 @@ async function main() {
 
   //Testnet
   const usdt = "0x1a551448eAF3b9d25DD818701b8689564386729C";     
-  const usdc = "0xc3ABbD82cc5C69a14a101F839FEa178D1b3C193A ";
+  const usdc = "0xc3ABbD82cc5C69a14a101F839FEa178D1b3C193A";
 
   const Payments = await hre.ethers.getContractFactory("Payments");
-  const payments = await Payments.deploy(usdt, usdc);
+  const payments = await Payments.deploy(usdc, usdt);
 
   console.log(
     `Payment contract deployed to https://sepolia.etherscan.io/address/${await payments.getAddress()}`
@@ -20,7 +20,7 @@ async function main() {
   // Verify the smart contract using hardhat 
   await hre.run("verify:verify", {
     address: await payments.getAddress(),
-    constructorArguments: [usdt, usdc],
+    constructorArguments: [usdc, usdt],
   });
 
 }
