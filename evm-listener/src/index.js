@@ -1,7 +1,7 @@
 import { Web3 } from "web3";
 import dotenv from "dotenv";
 import { contractAbi, contractAddress } from "./config/index.js";
-import { ethers } from 'ethers';
+import { ethers } from "ethers";
 
 dotenv.config();
 
@@ -64,7 +64,9 @@ const getPastWhiteListEvent = async () => {
 const getWhiteListEvent = async () => {
   const eventTopics = {
     address: [contractAddress],
-    topics: [currentWeb3.utils.sha3("TokensPaid(address,address,uint256,string)")],
+    topics: [
+      currentWeb3.utils.sha3("TokensPaid(address,address,uint256,string)"),
+    ],
   };
 
   const eventSubscribe = await currentWeb3Socket.eth.subscribe(
@@ -87,12 +89,15 @@ const getWhiteListEvent = async () => {
         ["address"],
         event.topics[2]
       );
-      let data = currentWeb3.eth.abi.decodeParameters(["uint256","string"], event.data);
+      let data = currentWeb3.eth.abi.decodeParameters(
+        ["uint256", "string"],
+        event.data
+      );
       const hash = `https://sepolia.etherscan.io/tx/${event.transactionHash}`;
 
-      const txDetails = currentWeb3.eth.getTransaction(event.transactionHash).then((res) => {
-        
-      });
+      const txDetails = currentWeb3.eth
+        .getTransaction(event.transactionHash)
+        .then((res) => {});
 
       const result = {
         eventName: "TokensPaid",
@@ -102,7 +107,7 @@ const getWhiteListEvent = async () => {
         amount: ethers.formatEther(data[0]),
         transactionHash: hash,
         blockNumber: event.blockNumber,
-        chainId: txDetails.chainId
+        chainId: txDetails.chainId,
       };
 
       console.log("result", result);

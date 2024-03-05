@@ -18,7 +18,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
     address public USDT;
 
     mapping(address => bool) public isShareHolder;
-    mapping(address => bool) public wertWhitelisted;
+    mapping(address => bool) public wertWhitelisted;    
 
     enum Token {
         USDC,
@@ -31,6 +31,8 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
         uint256 amountPaid,
         string solAddress
     );
+
+    event TokensUpdated(address _usdc, address _usdt, uint256  timeStamp);
 
     /// constructor
     constructor(address _usdc, address _usdt) Ownable(msg.sender) {
@@ -185,8 +187,16 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
     function whitelistUsersForWERT(
         address[] calldata _addressesToWhitelist
     ) external onlyOwner {
-        for (uint256 i = 0; i < _addressesToWhitelist.length; i++) {
+        for (uint256 i = 0; i < _addressesToWhitelist.length; i++) { 
             wertWhitelisted[_addressesToWhitelist[i]] = true;
+        }
+    }
+
+    function blacklistUsersForWERT(
+        address[] calldata _addressesToWhitelist
+    ) external onlyOwner {
+        for (uint256 i = 0; i < _addressesToWhitelist.length; i++) { 
+            wertWhitelisted[_addressesToWhitelist[i]] = false;
         }
     }
 
@@ -195,6 +205,8 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
 
         USDC = _usdc;
         USDT = _usdt;
+
+        emit TokensUpdated(_usdc, _usdt, block.timestamp);
     }
 
     /**
