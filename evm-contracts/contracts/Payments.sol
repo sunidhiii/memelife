@@ -80,7 +80,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
             wertWhitelisted[msg.sender],
             "User not whitelisted for this tx"
         );
-        // require(_amount == msg.value, "Invalid amount");
+        require(msg.value >= _amount, "Invalid amount");
 
         emit TokensPaid(msg.sender, address(0), _amount, _user);
         return true;
