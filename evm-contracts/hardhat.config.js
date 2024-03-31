@@ -17,6 +17,42 @@ module.exports = {
           },
         },
       },
+      {
+        version: "0.8.21",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: "0.4.17",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: "0.4.24",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: "0.6.12",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
     ],
   },
   networks: {
@@ -24,7 +60,7 @@ module.exports = {
       url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
       accounts: [DEPLOYER_PRIVATE_KEY],
     },
-    ethereum: {
+    mainnet: {
       url: `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
       accounts: [DEPLOYER_PRIVATE_KEY],
     },
@@ -44,10 +80,26 @@ module.exports = {
       url: `https://rpc.ankr.com/bsc`,
       accounts: [DEPLOYER_PRIVATE_KEY],
     },
+    base: {
+      url: "https://base-sepolia-rpc.publicnode.com",
+      accounts: [DEPLOYER_PRIVATE_KEY]
+    }
   },
   etherscan: {
     apiKey: {
       sepolia: "XW8FARI4JVCRE6MIFDJNCK66H8P4N75A8G",
+      mainnet: "XW8FARI4JVCRE6MIFDJNCK66H8P4N75A8G",
+      base: "C3FHT2DZTU1TCKCU4CZEHFAFWQGSZ4GGA5",
     },
-  },
+    customChains: [
+      {
+        network: "base",
+        chainId: 84532,
+        urls: {
+          apiURL: "https://api-sepolia.basescan.org/api",
+          browserURL: "https://sepolia.basescan.org/"
+        }
+      }
+    ]
+  }
 };
