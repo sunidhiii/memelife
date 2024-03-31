@@ -18,7 +18,6 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
     address public USDT;
 
     mapping(address => bool) public isShareHolder;
-    mapping(address => bool) public wertWhitelisted;    
 
     enum Token {
         USDC,
@@ -70,22 +69,6 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
         return true;
     }
 
-    function buyWithWert(string memory _user, uint256 _amount)
-        external
-        payable
-        whenNotPaused
-        returns (bool)
-    {
-        require(
-            wertWhitelisted[msg.sender],
-            "User not whitelisted for this tx"
-        );
-        require(msg.value >= _amount, "Invalid amount");
-
-        emit TokensPaid(msg.sender, address(0), _amount, _user);
-        return true;
-    }
-
     //  ------------------Admin functions---------------------------
 
     function setSplits(address[] memory _wallets, uint256[] memory _percentages)
@@ -108,7 +91,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
         require(totalPercentage == 100, "Total percentage must equal 100");
     }
 
-function withdrawToken(Token _token, uint256 _amount) external nonReentrant {
+    function withdrawToken(Token _token, uint256 _amount) external nonReentrant {
         require(msg.sender == owner() || isShareHolder[msg.sender], "Not a shareholder");
         require(_token == Token.USDC || _token == Token.USDT, "Invalid token");
         require(_amount > 0, "Invalid amount");
@@ -180,22 +163,6 @@ function withdrawToken(Token _token, uint256 _amount) external nonReentrant {
 
                 require(success, "ETH Payment failed");
             }
-        }
-    }
-
-    function whitelistUsersForWERT(
-        address[] calldata _addressesToWhitelist
-    ) external onlyOwner {
-        for (uint256 i = 0; i < _addressesToWhitelist.length; i++) { 
-            wertWhitelisted[_addressesToWhitelist[i]] = true;
-        }
-    }
-
-    function blacklistUsersForWERT(
-        address[] calldata _addressesToWhitelist
-    ) external onlyOwner {
-        for (uint256 i = 0; i < _addressesToWhitelist.length; i++) { 
-            wertWhitelisted[_addressesToWhitelist[i]] = false;
         }
     }
 

@@ -19,7 +19,7 @@ async function main() {
 
   
   await hre.run("verify:verify", {
-    address: '0xA7C8ec31DBDc7E8050731b645894Ad9964e70a8a',
+    address: '0xdeB61D0B94AE27FaFA1f444aD617438A375DFa8d',
     constructorArguments: [usdc,usdt]
   });
 

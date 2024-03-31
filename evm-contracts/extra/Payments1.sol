@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract Payments is Ownable, Pausable, ReentrancyGuard {
+contract Payments1 is Ownable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     uint256[] public percentages;
@@ -18,6 +18,7 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
     address public USDT;
 
     mapping(address => bool) public isShareHolder;
+    mapping(address => bool) public wertWhitelisted;    
 
     enum Token {
         USDC,
@@ -66,6 +67,22 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
         IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
 
         emit TokensPaid(msg.sender, token, _amount, _user);
+        return true;
+    }
+
+    function buyWithWert(string memory _user, uint256 _amount)
+        external
+        payable
+        whenNotPaused
+        returns (bool)
+    {
+        require(
+            wertWhitelisted[msg.sender],
+            "User not whitelisted for this tx"
+        );
+        require(msg.value >= _amount, "Invalid amount");
+
+        emit TokensPaid(msg.sender, address(0), msg.value, _user);
         return true;
     }
 
@@ -163,6 +180,22 @@ contract Payments is Ownable, Pausable, ReentrancyGuard {
 
                 require(success, "ETH Payment failed");
             }
+        }
+    }
+
+    function whitelistUsersForWERT(
+        address[] calldata _addressesToWhitelist
+    ) external onlyOwner {
+        for (uint256 i = 0; i < _addressesToWhitelist.length; i++) { 
+            wertWhitelisted[_addressesToWhitelist[i]] = true;
+        }
+    }
+
+    function blacklistUsersForWERT(
+        address[] calldata _addressesToWhitelist
+    ) external onlyOwner {
+        for (uint256 i = 0; i < _addressesToWhitelist.length; i++) { 
+            wertWhitelisted[_addressesToWhitelist[i]] = false;
         }
     }
 
