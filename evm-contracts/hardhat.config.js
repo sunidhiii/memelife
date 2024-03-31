@@ -2,7 +2,7 @@ require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
 require("hardhat-gas-reporter");
 
-const { DEPLOYER_PRIVATE_KEY, ALCHEMY_API_KEY } = process.env;
+const { DEPLOYER_PRIVATE_KEY, ALCHEMY_API_KEY, ETHERSCAN_API_KEY, BASE_API_KEY } = process.env;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -87,9 +87,9 @@ module.exports = {
   },
   etherscan: {
     apiKey: {
-      sepolia: "XW8FARI4JVCRE6MIFDJNCK66H8P4N75A8G",
-      mainnet: "XW8FARI4JVCRE6MIFDJNCK66H8P4N75A8G",
-      base: "C3FHT2DZTU1TCKCU4CZEHFAFWQGSZ4GGA5",
+      sepolia: ETHERSCAN_API_KEY,
+      mainnet: ETHERSCAN_API_KEY,
+      base: BASE_API_KEY,
     },
     customChains: [
       {
